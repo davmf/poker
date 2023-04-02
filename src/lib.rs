@@ -12,7 +12,7 @@ struct Card {
 }
 
 impl Card {
-    fn new(card: &str) -> Result<Card, &str> {
+    fn new(card: &str) -> Result<Card, String> {
         let values: Vec<String> = 
             vec!["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"].iter().map(|c| c.to_string()).collect();
 
@@ -21,7 +21,7 @@ impl Card {
         let suit = card[card.len()-1..card.len()].to_string();
 
         if !values.contains(&value) || !suits.contains(&suit) {
-            return Err("Invalid card!")
+            return Err("Invalid card!".to_string())
         }
         Ok( Card { value, suit } )
     }
@@ -32,7 +32,7 @@ struct PokerHand {
 }
 
 impl PokerHand {
-    fn new(hand: &str) -> Result<PokerHand, &str> {
+    fn new(hand: String) -> Result<PokerHand, String> {
         let card_strings: Vec<String> =
             hand
             .split_ascii_whitespace()
@@ -40,27 +40,19 @@ impl PokerHand {
             .collect();
         
         if card_strings.len() != 5 {
-                return Err("Invalid length");
+            return Err("Invalid length".to_string())
         }
-
-        // for card_string in &card_strings {
-        //     if Card::new(card_string).is_err() {
-        //         return Err("failed");
-        //     }
-        // }
 
         // let mut cards = vec![];
 
         // for card_string in &card_strings {
         //     cards.push(Card::new(card_string).unwrap());
         // }
-        let cards = vec![];
-
-        for card_string in card_strings {
-            let card = Card::new(&card_string)?;
-            cards.push(card);
-        }
-
+        let cards = card_strings
+        .iter()
+        .map(|card_string| Card::new(card_string))
+        .collect::<Result<Vec<Card>, _>>()?;
+    
         // let cards: Vec<Card> = card_strings
         //     .iter()
         //     .map(|card_string| Card::new(card_string)?)
@@ -73,6 +65,12 @@ impl PokerHand {
         //     .map(|cs| Card::new(cs).unwrap())
         //     .collect();
     }
+}
+
+!cfg[test]
+{
+    
+}
 
     #[test]
     fn test_new_card() {
