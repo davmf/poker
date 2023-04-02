@@ -54,14 +54,17 @@ impl PokerHand {
         // for card_string in &card_strings {
         //     cards.push(Card::new(card_string).unwrap());
         // }
+        let cards = vec![];
 
-        let cards = card_strings
-            .iter()
-            .map(
-                |card_string| Card::new(card_string)
-                .map_err(|_| "Invalid card")
-            )
-            .collect::<Result<Vec<_>, &str>>()?;
+        for card_string in card_strings {
+            let card = Card::new(&card_string)?;
+            cards.push(card);
+        }
+
+        // let cards: Vec<Card> = card_strings
+        //     .iter()
+        //     .map(|card_string| Card::new(card_string)?)
+        //     .collect();
     
         Ok( PokerHand { cards })
         // let cards: Vec<Result<Card, &str> =
