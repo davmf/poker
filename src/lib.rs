@@ -20,16 +20,18 @@ enum PokerHandType {
     HighCard,
 }
 
+#[derive(PartialEq)]
 struct Card {
     value: String,
     suit: String,
 }
 
+const CARDS: [&str; 13] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+
 impl Card {
     fn new(card: &str) -> Result<Card, String> {
         let values: Vec<String> = 
-            vec!["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-                .iter()
+            CARDS.iter()
                 .map(|c| c.to_string())
                 .collect();
 
