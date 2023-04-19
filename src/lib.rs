@@ -20,7 +20,7 @@ enum PokerHandType {
     HighCard,
 }
 
-#[derive(PartialEq)]
+#[derive(Eq, PartialEq)]
 struct Card {
     value: String,
     suit: String,
@@ -43,6 +43,20 @@ impl Card {
             return Err("Invalid card!".to_string())
         }
         Ok( Card { value, suit } )
+    }
+}
+
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let index_self = CARDS
+            .iter()
+            .position(|&x| x == &self.value)
+            .unwrap();
+        let index_other = CARDS
+            .iter()
+            .position(|&x| x == &other.value)
+            .unwrap();
+        index_self.cmp(&index_other)
     }
 }
 
