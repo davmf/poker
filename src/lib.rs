@@ -4,6 +4,19 @@
 /// the winning hand(s) as were passed in, not reconstructed strings which happen to be equal.
 use std::cmp::Ordering;
 
+trait SortedImpl {
+    fn sorted(self) -> Self;
+}
+
+impl<E> SortedImpl for Vec<E>
+    where E: std::cmp::Ord 
+{
+    fn sorted(mut self) -> Self {
+        self.sort();
+        self
+    }
+}
+
 pub fn winning_hands<'a>(hands: &[&'a str]) -> Vec<&'a str> {
     unimplemented!("Out of {hands:?}, which hand wins?")
 }
@@ -117,6 +130,15 @@ mod tests {
     fn test_bad_card() {
         let card = Card::new("11S");
         assert!(card.is_err());
+    }
+
+    #[test]
+    fn test_card_sorting() {
+        let card_names = ["10H", "6C", "2D", "KS", "JH"];
+        let sorted_card_names = ["2D", "6C", "10H", "JH", "KS"];
+        let cards: Vec<Card> = card_names.iter().map(|cn| Card::new(&cn).unwrap()).collect::<Vec<Card>>().sorted();
+        let sorted_cards: Vec<Card> = sorted_card_names.iter().map(|cn| Card::new(&cn).unwrap()).collect();
+        assert!(cards == sorted_cards);
     }
 
     #[test]
