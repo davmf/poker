@@ -40,6 +40,7 @@ struct Card {
 }
 
 const CARDS: [&str; 13] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+const SUITS: [&str; 4] = ["H", "D", "S", "C"];
 
 impl Card {
     fn new(card: &str) -> Result<Card, String> {
@@ -48,7 +49,7 @@ impl Card {
                 .map(|c| c.to_string())
                 .collect();
 
-        let suits: Vec<String> = vec!["C", "S", "D", "H"].iter().map(|c| c.to_string()).collect();
+        let suits: Vec<String> = SUITS.iter().map(|c| c.to_string()).collect();
         let value = card[..card.len()-1].to_string();
         let suit = card[card.len()-1..card.len()].to_string();
 
@@ -56,6 +57,10 @@ impl Card {
             return Err("Invalid card!".to_string())
         }
         Ok( Card { value, suit } )
+    }
+
+    fn suit(&self) -> String {
+        self.suit.clone()
     }
 }
 
@@ -103,8 +108,25 @@ impl PokerHand {
         Ok( PokerHand { cards })
     }
 
-    fn is_straight_flush(&self) {
+    fn is_flush(&self) -> bool {
+        let hand_suits: Vec<String> = self.cards
+            .iter()
+            .map(|card| card.suit())
+            .collect();
+        if hand_suits.iter().filter(|suit| *suit == "H").count() == 4 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 4 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 4 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 4 {
+            return true;
+        }
 
+        false
     }
 }
 
