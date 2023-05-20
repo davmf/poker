@@ -113,21 +113,48 @@ impl PokerHand {
             .iter()
             .map(|card| card.suit())
             .collect();
-        if hand_suits.iter().filter(|suit| *suit == "H").count() == 4 {
+        if hand_suits.iter().filter(|suit| *suit == "H").count() == 5 {
             return true;
         }
-        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 4 {
+        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 5 {
             return true;
         }
-        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 4 {
+        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 5 {
             return true;
         }
-        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 4 {
+        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 5 {
             return true;
         }
 
         false
     }
+
+    fn is_straight_flush(&self) -> bool {        
+        let hand_suits: Vec<String> = self.cards
+            .iter()
+            .map(|card| card.suit())
+            .collect();
+
+        // determine if all cards are the same suit
+
+        if hand_suits.iter().filter(|suit| *suit == "H").count() == 5 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 5 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 5 {
+            return true;
+        }
+        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 5 {
+            return true;
+        }
+
+        false
+    }
+
+    
+
 }
 
 #[cfg(test)]
@@ -173,5 +200,19 @@ mod tests {
     fn test_bad_poker_hand() {
         let hand = PokerHand::new("2C 3X 4H 5C 8S");
         assert!(hand.is_err());
+    }
+
+    #[test]
+    fn test_is_flush() {
+        let mut hand = PokerHand::new("2H 3H 4H 5H 8H").unwrap();
+        assert!(hand.is_flush());
+        hand = PokerHand::new("2D 3D 6D 7D 8D").unwrap();
+        assert!(hand.is_flush());
+        hand = PokerHand::new("2C 3C 6C 7C 8C").unwrap();
+        assert!(hand.is_flush());
+        hand = PokerHand::new("2S 3S 6S 7S 8S").unwrap();
+        assert!(hand.is_flush());
+        hand = PokerHand::new("2S 3C 6S 7S 8S").unwrap();
+        assert!(!hand.is_flush());
     }
 }
