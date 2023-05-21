@@ -1,8 +1,11 @@
+#![allow(unused)]
+
 /// Given a list of poker hands, return a list of those hands which win.
 ///
 /// Note the type signature: this function should return _the same_ reference to
 /// the winning hand(s) as were passed in, not reconstructed strings which happen to be equal.
-use std::cmp::Ordering;
+
+use std::{cmp::Ordering, ops::Index};
 
 trait SortedImpl {
     fn sorted(self) -> Self;
@@ -22,7 +25,7 @@ pub fn winning_hands<'a>(hands: &[&'a str]) -> Vec<&'a str> {
 }
 
 enum PokerHandType {
-    StraightFlush(),
+    StraightFlush,
     FourOfAKind,
     FullHouse,
     Flush,
@@ -33,7 +36,7 @@ enum PokerHandType {
     HighCard,
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 struct Card {
     value: String,
     suit: String,
@@ -62,6 +65,11 @@ impl Card {
     fn suit(&self) -> String {
         self.suit.clone()
     }
+
+    fn numeric_value(&self) -> i8 {
+        CARDS.iter().position(|s| *s == self.value).unwrap() as i8 + 2
+    }
+
 }
 
 impl Ord for Card {
@@ -113,53 +121,47 @@ impl PokerHand {
             .iter()
             .map(|card| card.suit())
             .collect();
-        if hand_suits.iter().filter(|suit| *suit == "H").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 5 {
-            return true;
-        }
 
-        false
+        Self::all_elements_equal(&hand_suits)
+
     }
 
     fn is_straight_flush(&self) -> bool {        
-        let hand_suits: Vec<String> = self.cards
-            .iter()
-            .map(|card| card.suit())
-            .collect();
-
-        // determine if all cards are the same suit
-
-        if hand_suits.iter().filter(|suit| *suit == "H").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "D").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "C").count() == 5 {
-            return true;
-        }
-        else if hand_suits.iter().filter(|suit| *suit == "S").count() == 5 {
-            return true;
-        }
-
-        false
+        self.is_flush() && self.is_straight()
     }
 
+    fn all_elements_equal<T: PartialEq>(slice: &[T]) -> bool {
+        if let Some((first, rest)) = slice.split_first() {
+            rest.iter().all(|x| x == first)
+        } else {
+            true
+        }
+    }
+
+    fn is_straight(&self) -> bool {
+        let mut sorted_cards = self.cards.clone();
+        sorted_cards.sort();
     
+        for i in 0..sorted_cards.len() - 1 {
+            if sorted_cards[i].numeric_value() + 1 != sorted_cards[i + 1].numeric_value() {
+                return false;
+            }
+        }
+    
+        true
+    }   
 
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_numeric_value() {
+        let card = Card::new("2C").unwrap();
+        assert!(card.numeric_value() == 2);
+    }
 
     #[test]
     fn test_new_card() {
@@ -204,15 +206,37 @@ mod tests {
 
     #[test]
     fn test_is_flush() {
-        let mut hand = PokerHand::new("2H 3H 4H 5H 8H").unwrap();
+        let hand = PokerHand::new("2H 3H 4H 5H 8H").unwrap();
         assert!(hand.is_flush());
-        hand = PokerHand::new("2D 3D 6D 7D 8D").unwrap();
+        let hand = PokerHand::new("2D 3D 6D 7D 8D").unwrap();
         assert!(hand.is_flush());
-        hand = PokerHand::new("2C 3C 6C 7C 8C").unwrap();
+        let hand = PokerHand::new("2C 3C 6C 7C 8C").unwrap();
         assert!(hand.is_flush());
-        hand = PokerHand::new("2S 3S 6S 7S 8S").unwrap();
+        let hand = PokerHand::new("2S 3S 6S 7S 8S").unwrap();
         assert!(hand.is_flush());
-        hand = PokerHand::new("2S 3C 6S 7S 8S").unwrap();
+        let hand = PokerHand::new("2S 3C 6S 7S 8S").unwrap();
         assert!(!hand.is_flush());
+    }
+
+    #[test]
+    fn test_is_straight() {
+        let hand = PokerHand::new("2H 3D 4C 5H 6S").unwrap();
+        assert!(hand.is_straight());
+        let hand = PokerHand::new("2D 3D 6C 5D 4S").unwrap();
+        assert!(hand.is_straight());
+        let hand = PokerHand::new("2D 3D 8C 5D 4S").unwrap();
+        assert!(!hand.is_straight());
+    }
+
+    #[test]
+    fn test_is_straight_flush() {
+        let hand = PokerHand::new("2D 3D 4D 5D 6D").unwrap();
+        assert!(hand.is_straight_flush());
+        let hand = PokerHand::new("9C 8C 10C QC JC").unwrap();
+        assert!(hand.is_straight_flush());
+        let hand = PokerHand::new("2D 3D 6C 5D 4S").unwrap();
+        assert!(!hand.is_straight_flush());
+        let hand = PokerHand::new("2D 3D 8D 5D 4D").unwrap();
+        assert!(!hand.is_straight_flush());
     }
 }
